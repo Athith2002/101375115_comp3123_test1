@@ -1,33 +1,34 @@
-// Create a method resolvedPromise
-function resolvedPromise() {
-  return new Promise((resolve, reject) => {
+const resolvedPromise = () => {
+  return new Promise((resolve) => {
     setTimeout(() => {
-      resolve({ message: "delayed success!" });
+      resolve({ message: 'Delayed success!' });
     }, 500);
   });
-}
+};
 
-// Create a method rejectedPromise
-function rejectedPromise() {
-  return new Promise((resolve, reject) => {
+const rejectedPromise = () => {
+  return new Promise((_, reject) => {
     setTimeout(() => {
-      reject({ error: "delayed exception!" });
+      reject(new Error('Error: Delayed exception!'));
     }, 500);
   });
-}
+};
 
-resolvedPromise()
-  .then((result) => {
-    console.log(result);
-  })
-  .catch((error) => {
-    console.error(error);
-  });
+const handlePromises = async () => {
+  try {
+    const resolvedResult = await resolvedPromise();
+    console.log('Resolved Result:', resolvedResult);
+  } catch (error) {
+    console.error('Error in resolvedPromise:', error.message);
+  }
 
-rejectedPromise()
-  .then((result) => {
-    console.log(result);
-  })
-  .catch((error) => {
-    console.error(error);
-  });
+  try {
+    const rejectedResult = await rejectedPromise();
+    console.log('This will not be reached because it is a rejected promise');
+  } catch (error) {
+    console.error('Error in rejectedPromise:', error.message);
+  }
+};
+
+handlePromises();
+

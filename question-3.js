@@ -1,48 +1,51 @@
-const fs = require("fs");
+const fs = require("fs").promises;
 const path = require("path");
 
 // Function to remove files and directory
-function removeLogsDirectory() {
+async function removeLogsDirectory() {
   const logsDirectoryPath = path.join(__dirname, "Logs");
 
-  // Check if the Logs directory exists
-  if (fs.existsSync(logsDirectoryPath)) {
-    // Read the directory and get file names
-    const files = fs.readdirSync(logsDirectoryPath);
+  try {
+    // Check if the Logs directory exists
+    if (await fs.stat(logsDirectoryPath)) {
+      // Read the directory and get file names
+      const files = await fs.readdir(logsDirectoryPath);
 
-    // Output the file names to delete
-    files.forEach((file) => {
-      console.log(`delete files...${file}`);
-      fs.unlinkSync(path.join(logsDirectoryPath, file)); // Remove each file
-    });
+      // Output the file names to delete
+      for (const file of files) {
+        console.log(`Deleting file... ${file}`);
+        await fs.unlink(path.join(logsDirectoryPath, file)); // Remove each file
+      }
 
-    // Remove the Logs directory itself
-    fs.rmdirSync(logsDirectoryPath);
-  } else {
-    console.log("Logs directory does not exist.");
+      // Remove the Logs directory itself
+      await fs.rmdir(logsDirectoryPath);
+    } else {
+      console.log("Logs directory does not exist.");
+    }
+  } catch (error) {
+    console.error("Error removing Logs directory:", error);
   }
 }
 
-// Function to create log files
-function createLogFiles() {
+async function createLogFiles() {
   const logsDirectoryPath = path.join(__dirname, "Logs");
 
-  // Create the Logs directory if it does not exist
-  if (!fs.existsSync(logsDirectoryPath)) {
-    fs.mkdirSync(logsDirectoryPath);
-  }
+  try {
+    if (!(await fs.stat(logsDirectoryPath)).isDirectory()) {
+      await fs.mkdir(logsDirectoryPath);
+    }
+    process.chdir(logsDirectoryPath);
 
-  // Change the current working directory to the Logs directory
-  process.chdir(logsDirectoryPath);
-
-  // Create 10 log files and write some text into each file
-  for (let i = 0; i < 10; i++) {
-    const fileName = `log${i}.txt`;
-    fs.writeFileSync(fileName, `This is log file ${i}`);
-    console.log(fileName);
+    for (let i = 0; i < 10; i++) {
+      const fileName = `log${i}.txt`;
+      await fs.writeFile(fileName, `This is log file ${i}`);
+      console.log(fileName);
+    }
+  } catch (error) {
+    console.error("Error creating log files:", error);
   }
 }
-
-// Call the functions to remove and create log files
-removeLogsDirectory();
-createLogFiles();
+(async () => {
+  await removeLogsDirectory();
+  await createLogFiles();
+})();
